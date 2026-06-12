@@ -43,6 +43,7 @@ function CriarConviteContent() {
 
   const [step, setStep] = useState<1 | 2 | 3>(1);
   const [createdConvite, setCreatedConvite] = useState<{ slug: string; id: string; valor: number } | null>(null);
+  const [pixData, setPixData] = useState<{qrCode: string, qrCodeBase64: string} | null>(null);
 
   const form = useForm<FormData>({
     resolver: zodResolver(formSchema),
@@ -76,6 +77,7 @@ function CriarConviteContent() {
       if (!res.ok) throw new Error(json.error || "Erro ao criar convite");
 
       setCreatedConvite(json.convite);
+      setPixData(json.pix);
       setStep(3);
       toast.success("Convite criado com sucesso!");
     } catch (error: unknown) {
@@ -303,7 +305,7 @@ function CriarConviteContent() {
 
   function renderStep3() {
     if (!createdConvite) return null;
-    const url = `${getAppUrl()}/convite/${createdConvite.slug}`;
+    const url = `${getAppUrl()}/${createdConvite.slug}`;
 
     return (
       <div className="text-center py-8 animate-in fade-in zoom-in-95">
@@ -320,13 +322,24 @@ function CriarConviteContent() {
           <p className="text-sm text-gray-500 mb-2">Valor do Plano</p>
           <p className="text-3xl font-bold text-gray-800 mb-6">{formatCurrency(createdConvite.valor)}</p>
           
-          <div className="w-48 h-48 bg-white border border-gray-200 rounded-xl mx-auto mb-6 flex items-center justify-center">
-            {/* Aqui iria o QR Code real do Mercado Pago */}
-            <span className="text-gray-400 text-sm font-medium">QR CODE PIX</span>
+          <div className="w-48 h-48 bg-white border border-gray-200 rounded-xl mx-auto mb-6 flex items-center justify-center overflow-hidden">
+            {pixData?.qrCodeBase64 ? (
+              <img src={`data:image/png;base64,${pixData.qrCodeBase64}`} alt="QR Code Pix" className="w-full h-full object-contain p-2" />
+            ) : (
+              <span className="text-gray-400 text-sm font-medium">Gerando QR Code...</span>
+            )}
           </div>
 
-          <button className="w-full bg-white border border-gray-300 hover:bg-gray-50 text-gray-700 py-3 rounded-xl font-medium flex items-center justify-center gap-2 transition-colors">
-            <Copy className="w-4 h-4" /> Copia e Cola
+          <button 
+            onClick={() => {
+              if (pixData?.qrCode) {
+                navigator.clipboard.writeText(pixData.qrCode);
+                toast.success("Codigo Pix copiado!");
+              }
+            }}
+            className="w-full bg-white border border-gray-300 hover:bg-gray-50 text-gray-700 py-3 rounded-xl font-medium flex items-center justify-center gap-2 transition-colors"
+          >
+            <Copy className="w-4 h-4" /> Copiar Codigo Pix
           </button>
         </div>
 

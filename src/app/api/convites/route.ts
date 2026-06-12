@@ -106,7 +106,7 @@ export async function POST(req: NextRequest) {
       status: "pendente",
     });
 
-    return NextResponse.json({
+      return NextResponse.json({
       success: true,
       convite: {
         id: convite.id,
@@ -114,6 +114,7 @@ export async function POST(req: NextRequest) {
         valor,
         plano,
       },
+      pix: pixData
     });
   } catch (error: any) {
     console.error("Erro detalhado ao criar convite:", error);
