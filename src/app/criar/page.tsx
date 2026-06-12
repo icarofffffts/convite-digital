@@ -22,7 +22,7 @@ const formSchema = z.object({
   local_endereco: z.string().min(5, "Endereco obrigatorio"),
   local_maps_url: z.string().url("URL do mapa invalida").optional().or(z.literal("")),
   mensagem: z.string().optional(),
-  tema_id: z.string().optional(), // No banco de producao idealmente seria UUID
+  tema_slug: z.string().optional(), // Alterado de tema_id para tema_slug
   plano: z.enum(["basico", "premium", "luxo"]),
 });
 
@@ -30,9 +30,9 @@ type FormData = z.infer<typeof formSchema>;
 
 // Mock temas para o frontend (os mesmos criados no SQL)
 const TEMAS = [
-  { id: "1", slug: "festa-tropical", nome: "Festa Tropical" },
-  { id: "2", slug: "romance-elegante", nome: "Romance Elegante" },
-  { id: "3", slug: "mundo-baby", nome: "Mundo Baby" },
+  { slug: "festa-tropical", nome: "Festa Tropical" },
+  { slug: "romance-elegante", nome: "Romance Elegante" },
+  { slug: "mundo-baby", nome: "Mundo Baby" },
 ];
 
 function CriarConviteContent() {
@@ -48,7 +48,7 @@ function CriarConviteContent() {
     resolver: zodResolver(formSchema),
     defaultValues: {
       plano: planoParam || "basico",
-      tema_id: TEMAS.find(t => t.slug === temaSlugParam)?.id || TEMAS[0].id,
+      tema_slug: TEMAS.find(t => t.slug === temaSlugParam)?.slug || TEMAS[0].slug,
       nome_cliente: "",
       email: "",
       telefone: "",
@@ -146,11 +146,11 @@ function CriarConviteContent() {
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">Tema *</label>
               <select
-                {...form.register("tema_id")}
+                {...form.register("tema_slug")}
                 className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-purple-500 bg-white outline-none"
               >
                 {TEMAS.map((t) => (
-                  <option key={t.id} value={t.id}>{t.nome}</option>
+                  <option key={t.slug} value={t.slug}>{t.nome}</option>
                 ))}
               </select>
             </div>
@@ -160,7 +160,7 @@ function CriarConviteContent() {
         <button
           type="button"
           onClick={async () => {
-            const valid = await form.trigger(["nome_cliente", "email", "telefone", "plano", "tema_id"]);
+            const valid = await form.trigger(["nome_cliente", "email", "telefone", "plano", "tema_slug"]);
             if (valid) setStep(2);
           }}
           className="w-full bg-purple-600 hover:bg-purple-700 text-white font-medium py-4 rounded-xl transition-colors flex items-center justify-center gap-2 mt-8"

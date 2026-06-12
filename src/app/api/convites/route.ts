@@ -17,7 +17,7 @@ export async function POST(req: NextRequest) {
       local_endereco,
       local_maps_url,
       mensagem,
-      tema_id,
+      tema_slug,
       plano = "basico",
       email,
       nome_cliente,
@@ -57,13 +57,27 @@ export async function POST(req: NextRequest) {
     const slug = generateSlug(8);
     const valor = PLANO_PRECOS[plano as keyof typeof PLANO_PRECOS] || 29;
 
+    // Buscar o ID real do tema pelo slug
+    let db_tema_id = null;
+    if (tema_slug) {
+      const { data: temaRow } = await supabase
+        .from("temas")
+        .select("id")
+        .eq("slug", tema_slug)
+        .single();
+      
+      if (temaRow) {
+        db_tema_id = temaRow.id;
+      }
+    }
+
     // Criar convite
     const { data: convite, error } = await supabase
       .from("convites")
       .insert({
         slug,
         cliente_id,
-        tema_id,
+        tema_id: db_tema_id,
         plano,
         nome_anfitriao,
         titulo_evento,
