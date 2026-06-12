@@ -1,26 +1,7 @@
 import { type ClassValue, clsx } from "clsx";
 
-// Simple cn utility without tailwind-merge (keep bundle small)
 export function cn(...inputs: ClassValue[]) {
   return clsx(inputs);
-}
-
-// Clsx inline (no extra dep needed for this small helper)
-function clsx(...inputs: ClassValue[]): string {
-  const classes: string[] = [];
-  for (const input of inputs) {
-    if (!input) continue;
-    if (typeof input === "string") {
-      classes.push(input);
-    } else if (Array.isArray(input)) {
-      classes.push(clsx(...input));
-    } else if (typeof input === "object") {
-      for (const [key, value] of Object.entries(input)) {
-        if (value) classes.push(key);
-      }
-    }
-  }
-  return classes.filter(Boolean).join(" ");
 }
 
 export function formatDate(date: string | Date, locale = "pt-BR") {
