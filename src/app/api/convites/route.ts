@@ -34,11 +34,11 @@ export async function POST(req: NextRequest) {
 
     // Criar ou buscar cliente
     let cliente_id: string;
-    const { data: existingCliente } = await supabase
+    const { data: existingCliente, error: findError } = await supabase
       .from("clientes")
       .select("id")
       .eq("email", email)
-      .single();
+      .maybeSingle(); // maybeSingle evita erro se não encontrar nada
 
     if (existingCliente) {
       cliente_id = existingCliente.id;
@@ -49,7 +49,10 @@ export async function POST(req: NextRequest) {
         .select("id")
         .single();
 
-      if (clienteError) throw clienteError;
+      if (clienteError) {
+        console.error("Erro ao criar cliente:", clienteError);
+        throw clienteError;
+      }
       cliente_id = newCliente.id;
     }
 
@@ -112,9 +115,10 @@ export async function POST(req: NextRequest) {
         plano,
       },
     });
-  } catch (error: unknown) {
-    console.error("Erro ao criar convite:", error);
-    const message = error instanceof Error ? error.message : "Erro interno";
+  } catch (error: any) {
+    console.error("Erro detalhado ao criar convite:", error);
+    // Extrai a mensagem real de erros do Supabase que não são instâncias de Error padrão
+    const message = error?.message || error?.details || JSON.stringify(error) || "Erro interno";
     return NextResponse.json({ error: message }, { status: 500 });
   }
 }
